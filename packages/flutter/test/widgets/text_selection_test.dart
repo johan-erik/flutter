@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/gestures.dart' show PointerDeviceKind, kSecondaryButton;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -506,8 +507,20 @@ void main() {
     final FakeEditableTextState state = tester.state(find.byType(FakeEditableText));
     final FakeRenderEditable renderEditable = tester.renderObject(find.byType(FakeEditable));
     expect(state.showToolbarCalled, isFalse);
-    expect(renderEditable.selectWordEdgeCalled, isTrue);
-  });
+
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        expect(renderEditable.selectWordEdgeCalled, isTrue);
+        break;
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        expect(renderEditable.selectPositionAtCalled, isTrue);
+        break;
+    }
+  }, variant: TargetPlatformVariant.all());
 
   testWidgets('test TextSelectionGestureDetectorBuilder double tap', (WidgetTester tester) async {
     await pumpTextSelectionGestureDetectorBuilder(tester);
@@ -694,7 +707,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final Finder gestureDetector = find.descendant(
-      of: find.byType(Visibility),
+      of: find.byType(CompositedTransformFollower),
       matching: find.descendant(
         of: find.byType(FadeTransition),
         matching: find.byType(GestureDetector),
@@ -897,7 +910,7 @@ class FakeRenderEditable extends RenderEditable {
 
 class CustomTextSelectionControls extends TextSelectionControls {
   @override
-  Widget buildHandle(BuildContext context, TextSelectionHandleType type, double textLineHeight, [VoidCallback? onTap, double? startGlyphHeight, double? endGlyphHeight]) {
+  Widget buildHandle(BuildContext context, TextSelectionHandleType type, double textLineHeight, [VoidCallback? onTap]) {
     throw UnimplementedError();
   }
 
@@ -916,7 +929,7 @@ class CustomTextSelectionControls extends TextSelectionControls {
   }
 
   @override
-  Offset getHandleAnchor(TextSelectionHandleType type, double textLineHeight, [double? startGlyphHeight, double? endGlyphHeight]) {
+  Offset getHandleAnchor(TextSelectionHandleType type, double textLineHeight) {
     throw UnimplementedError();
   }
 

@@ -917,9 +917,6 @@ class _CupertinoDialogRenderElement extends RenderObjectElement {
   Element? _actionsElement;
 
   @override
-  _CupertinoDialogRenderWidget get widget => super.widget as _CupertinoDialogRenderWidget;
-
-  @override
   _RenderCupertinoDialog get renderObject => super.renderObject as _RenderCupertinoDialog;
 
   @override
@@ -935,8 +932,9 @@ class _CupertinoDialogRenderElement extends RenderObjectElement {
   @override
   void mount(Element? parent, Object? newSlot) {
     super.mount(parent, newSlot);
-    _contentElement = updateChild(_contentElement, widget.contentSection, _AlertDialogSections.contentSection);
-    _actionsElement = updateChild(_actionsElement, widget.actionsSection, _AlertDialogSections.actionsSection);
+    final _CupertinoDialogRenderWidget dialogRenderWidget = widget as _CupertinoDialogRenderWidget;
+    _contentElement = updateChild(_contentElement, dialogRenderWidget.contentSection, _AlertDialogSections.contentSection);
+    _actionsElement = updateChild(_actionsElement, dialogRenderWidget.actionsSection, _AlertDialogSections.actionsSection);
   }
 
   @override
@@ -957,8 +955,9 @@ class _CupertinoDialogRenderElement extends RenderObjectElement {
   @override
   void update(RenderObjectWidget newWidget) {
     super.update(newWidget);
-    _contentElement = updateChild(_contentElement, widget.contentSection, _AlertDialogSections.contentSection);
-    _actionsElement = updateChild(_actionsElement, widget.actionsSection, _AlertDialogSections.actionsSection);
+    final _CupertinoDialogRenderWidget dialogRenderWidget = widget as _CupertinoDialogRenderWidget;
+    _contentElement = updateChild(_contentElement, dialogRenderWidget.contentSection, _AlertDialogSections.contentSection);
+    _actionsElement = updateChild(_actionsElement, dialogRenderWidget.actionsSection, _AlertDialogSections.actionsSection);
   }
 
   @override
@@ -1675,11 +1674,7 @@ class _ActionButtonParentDataWidget
 // ParentData applied to individual action buttons that report whether or not
 // that button is currently pressed by the user.
 class _ActionButtonParentData extends MultiChildLayoutParentData {
-  _ActionButtonParentData({
-    this.isPressed = false,
-  });
-
-  bool isPressed;
+  bool isPressed = false;
 }
 
 /// A button typically used in a [CupertinoAlertDialog].
@@ -2050,16 +2045,18 @@ class _RenderCupertinoDialogActions extends RenderBox
     markNeedsPaint();
   }
 
-  Iterable<RenderBox> get _pressedButtons sync* {
+  Iterable<RenderBox> get _pressedButtons {
+    final List<RenderBox> boxes = <RenderBox>[];
     RenderBox? currentChild = firstChild;
     while (currentChild != null) {
       assert(currentChild.parentData is _ActionButtonParentData);
       final _ActionButtonParentData parentData = currentChild.parentData! as _ActionButtonParentData;
       if (parentData.isPressed) {
-        yield currentChild;
+        boxes.add(currentChild);
       }
       currentChild = childAfter(currentChild);
     }
+    return boxes;
   }
 
   bool get _isButtonPressed {
